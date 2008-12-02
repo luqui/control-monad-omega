@@ -1,0 +1,14 @@
+Name: control-monad-omega
+Description:
+    A monad for enumerating sets: like the list
+    monad but breadth-first.
+Version: 0.3
+Stability: experimental
+Synopsis: A breadth-first list monad.
+License: PublicDomain
+Category: Control
+Author: Luke Palmer
+Maintainer: lrpalmer@gmail.com
+Build-Type: Simple
+Build-Depends: base
+Exposed-Modules: Control.Monad.Omega
