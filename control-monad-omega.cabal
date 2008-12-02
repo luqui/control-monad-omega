@@ -7,6 +7,7 @@ Stability: experimental
 Synopsis: A breadth-first list monad.
 License: PublicDomain
 Category: Control
+Homepage: http://github.com/luqui/control-monad-omega
 Author: Luke Palmer
 Maintainer: lrpalmer@gmail.com
 Build-Type: Simple
