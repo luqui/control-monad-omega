@@ -2,7 +2,7 @@ Name: control-monad-omega
 Description:
     A monad for enumerating sets: like the list
     monad but breadth-first.
-Version: 0.3
+Version: 0.3.1
 Stability: experimental
 Synopsis: A breadth-first list monad.
 License: PublicDomain

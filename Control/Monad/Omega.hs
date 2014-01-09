@@ -31,7 +31,9 @@
 -- Warning: Omega is only a monad when the results of @runOmega@ are
 -- interpreted as a set; that is, a valid transformation according to the
 -- monad laws may change the order of the results.  However, the same
--- set of results will always be reachable. 
+-- set of results will always be reachable.  If you are using this as a monad, 
+-- I recommendIded that you use the newer weighted-search package instead 
+-- (it's also faster).
 ----------------------------------------------
 
 module Control.Monad.Omega 
