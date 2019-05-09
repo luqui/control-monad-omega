@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 ----------------------------------------------
 -- |
 -- Module    : Control.Monad.Omega
@@ -45,6 +46,8 @@ import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
 import qualified Data.Traversable as Traversable
 
+import qualified Control.Monad.Fail as Fail
+
 -- | This is the hinge algorithm of the Omega monad,
 -- exposed because it can be useful on its own.  Joins 
 -- a list of lists with the property that for every i j 
@@ -72,6 +75,12 @@ instance Functor Omega where
 instance Monad Omega where
     return x = Omega [x]
     Omega m >>= f = Omega $ diagonal $ map (runOmega . f) m
+
+#if !(MIN_VERSION_base(4,13,0))
+    fail = Fail.fail
+#endif
+
+instance Fail.MonadFail Omega where
     fail _ = Omega []
 
 instance Monad.MonadPlus Omega where
