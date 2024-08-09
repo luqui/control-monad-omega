@@ -73,7 +73,7 @@ instance Functor Omega where
     fmap f (Omega xs) = Omega (map f xs)
 
 instance Monad Omega where
-    return x = Omega [x]
+    return = pure
     Omega m >>= f = Omega $ diagonal $ map (runOmega . f) m
 
 #if !(MIN_VERSION_base(4,13,0))
@@ -88,7 +88,7 @@ instance Monad.MonadPlus Omega where
     mplus = (Applicative.<|>)
 
 instance Applicative.Applicative Omega where
-    pure = return
+    pure = Omega . (:[])
     (<*>) = Monad.ap
 
 instance Applicative.Alternative Omega where
