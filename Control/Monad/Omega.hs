@@ -44,6 +44,7 @@ where
 import qualified Control.Monad as Monad
 import qualified Control.Applicative as Applicative
 import qualified Data.Foldable as Foldable
+import Data.List (tails)
 import qualified Data.Traversable as Traversable
 
 import qualified Control.Monad.Fail as Fail
@@ -73,7 +74,7 @@ instance Functor Omega where
     fmap f (Omega xs) = Omega (map f xs)
 
 instance Monad Omega where
-    return x = Omega [x]
+    return = pure
     Omega m >>= f = Omega $ diagonal $ map (runOmega . f) m
 
 #if !(MIN_VERSION_base(4,13,0))
@@ -84,16 +85,23 @@ instance Fail.MonadFail Omega where
     fail _ = Omega []
 
 instance Monad.MonadPlus Omega where
-    mzero = Omega []
-    mplus (Omega xs) (Omega ys) = Omega (diagonal [xs,ys])
+    mzero = Applicative.empty
+    mplus = (Applicative.<|>)
 
 instance Applicative.Applicative Omega where
-    pure = return
-    (<*>) = Monad.ap
+    pure = Omega . (:[])
+    liftA2 f (Omega xs) = Omega . go [] . runOmega
+        where
+            go initYs [] = concatMap (flip (zipWith f) initYs) (tails xs)
+            go initYs (y : ys) = zipWith f xs initYs  ++ go (y : initYs) ys
 
 instance Applicative.Alternative Omega where
     empty = Omega []
-    Omega xs <|> Omega ys = Omega (diagonal [xs,ys])
+    Omega xs <|> Omega ys = Omega $ interleave xs ys
+
+interleave :: [a] -> [a] -> [a]
+interleave [] ys = ys
+interleave (x : xs) ys = x : interleave ys xs
 
 instance Foldable.Foldable Omega where
     foldMap f (Omega xs) = Foldable.foldMap f xs
