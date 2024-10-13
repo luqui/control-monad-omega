@@ -1,4 +1,6 @@
 {-# LANGUAGE CPP #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Avoid restricted function" #-}
 ----------------------------------------------
 -- |
 -- Module    : Control.Monad.Omega
@@ -41,13 +43,14 @@ module Control.Monad.Omega
     (diagonal, Omega, runOmega, each) 
 where
 
-import qualified Control.Monad as Monad
 import qualified Control.Applicative as Applicative
+import Control.Exception
+import qualified Control.Monad as Monad
+import qualified Control.Monad.Fail as Fail
 import qualified Data.Foldable as Foldable
 import Data.List (tails)
 import qualified Data.Traversable as Traversable
-
-import qualified Control.Monad.Fail as Fail
+import System.IO.Unsafe
 
 -- | This is the hinge algorithm of the Omega monad,
 -- exposed because it can be useful on its own.  Joins 
@@ -75,11 +78,26 @@ instance Functor Omega where
 
 instance Monad Omega where
     return = pure
-    Omega m >>= f = Omega $ diagonal $ map (runOmega . f) m
+    Omega m >>= f
+        | isConstEmpty f = Omega []
+        | otherwise = Omega $ diagonal $ map (runOmega . f) m
 
 #if !(MIN_VERSION_base(4,13,0))
     fail = Fail.fail
 #endif
+
+data MyException = MyException
+  deriving (Show)
+
+instance Exception MyException
+
+isConstEmpty :: (a -> Omega b) -> Bool
+isConstEmpty f = unsafePerformIO $ do
+  ret <- try $ evaluate $ f (throw MyException)
+  pure $ case ret of
+    Left MyException -> False
+    Right (Omega xs) -> null xs
+
 
 instance Fail.MonadFail Omega where
     fail _ = Omega []
