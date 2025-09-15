@@ -29,5 +29,32 @@ main = defaultMain $ testGroup "All"
     let f x y = x * 10 + y in
     runOmega (liftA2 f (each xs) (each ys)) ===
       runOmega (join (each (map (\x -> each (map (\y -> f x y) ys)) xs)))
+
+  , adjustOption (min (mkTimeout 1000000)) $
+    testProperty "enumerate arithGrammar" $ once $
+      take 10 (runOmega (enumerate arithGrammar)) ===
+        ["0","1","0+0","0*0","0+1","(0)","1+0","0*1","0+0*0","00"]
   ]
 
+-- From https://web.archive.org/web/20140823135714/http://lukepalmer.wordpress.com/2008/05/02/enumerating-a-context-free-language/
+
+data Symbol a
+  = Terminal a
+  | Nonterminal [[Symbol a]] -- a disjunction of juxtapositions
+
+enumerate :: Symbol a -> Omega [a]
+enumerate (Terminal a) = return [a]
+enumerate (Nonterminal alts) = do
+  alt <- each alts          -- for each alternative
+  rep <- mapM enumerate alt -- enumerate each symbol in the sequence
+  return $ concat rep       -- and concatenate the results
+
+arithGrammar :: Symbol Char
+arithGrammar = s
+  where
+    s      = Nonterminal [[add]]
+    add    = Nonterminal [[mul], [add, Terminal '+', mul]]
+    mul    = Nonterminal [[term], [mul, Terminal '*', term]]
+    term   = Nonterminal [[number], [Terminal '(', s, Terminal ')']]
+    digit  = Nonterminal $ map (map Terminal . show) [0..9]
+    number = Nonterminal [[digit], [digit, number]]
