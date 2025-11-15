@@ -30,6 +30,10 @@ main = defaultMain $ testGroup "All"
     runOmega (liftA2 f (each xs) (each ys)) ===
       runOmega (join (each (map (\x -> each (map (\y -> f x y) ys)) xs)))
 
+  , testProperty "liftA2 (,) undefined []" $ once $
+    runOmega (liftA2 (,) undefined (each [])) === ([] :: [((), ())])
+  , testProperty "liftA2 (,) (1 : undefined) (1 : undefined)" $ once $
+    take 1 (runOmega (liftA2 (,) (each (1 : undefined)) (each (1 : undefined)))) === [(1, 1)]
   , adjustOption (min (mkTimeout 1000000)) $
     testProperty "enumerate arithGrammar" $ once $
       take 10 (runOmega (enumerate arithGrammar)) ===
