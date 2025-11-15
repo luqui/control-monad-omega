@@ -1,3 +1,7 @@
+# 0.3.4
+
+* Fix a regression in 0.3.3, which made `liftA2` too strict.
+
 # 0.3.3
 
 * Speed up `Applicative` / `Alternative` / `MonadPlus` instances.
