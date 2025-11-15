@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE LambdaCase #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Avoid restricted function" #-}
 ----------------------------------------------
@@ -110,8 +111,12 @@ instance Applicative.Applicative Omega where
     pure = Omega . (:[])
     liftA2 f (Omega xs) = Omega . go [] . runOmega
         where
-            go initYs [] = concatMap (flip (zipWith f) initYs) (tails xs)
-            go initYs (y : ys) = zipWith f xs initYs  ++ go (y : initYs) ys
+            go [] = \case
+              [] -> []
+              y : ys -> go [y] ys
+            go initYs = (zipWith f xs initYs ++) . \case
+                [] -> concatMap (flip (zipWith f) initYs) (drop 1 (tails xs))
+                y : ys -> go (y : initYs) ys
 
 instance Applicative.Alternative Omega where
     empty = Omega []
